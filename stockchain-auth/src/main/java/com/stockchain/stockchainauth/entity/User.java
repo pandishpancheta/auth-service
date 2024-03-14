@@ -1,5 +1,6 @@
 package com.stockchain.stockchainauth.entity;
 
+import com.stockchain.stockchainauth.mapper.ContactsMapper;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,6 +10,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -36,9 +38,8 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @OneToOne(cascade = CascadeType.REMOVE, fetch = FetchType.LAZY)
-    @JoinColumn(name = "contact_id", referencedColumnName = "id")
-    private Contacts contacts;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE, fetch = FetchType.EAGER)
+    private List<Contacts> contacts;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

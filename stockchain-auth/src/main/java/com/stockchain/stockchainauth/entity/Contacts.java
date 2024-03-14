@@ -23,6 +23,6 @@ public class Contacts {
     @Column(nullable = false)
     private String value;
 
-    @OneToOne(mappedBy = "contacts")
+    @ManyToOne
     private User user;
 }
