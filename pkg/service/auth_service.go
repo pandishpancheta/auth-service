@@ -8,6 +8,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"github.com/gofrs/uuid/v5"
 	"golang.org/x/crypto/bcrypt"
 	"time"
@@ -43,14 +44,16 @@ func NewAuthService(db *sql.DB, cfg *config.Config) AuthService {
 
 func (a *authService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.AuthResponse, error) {
 	var user models.User
-	err := a.db.QueryRowContext(ctx, "SELECT * FROM users WHERE email = $1", req.GetEmail()).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.CreatedAt)
+	err := a.db.QueryRowContext(ctx, "SELECT id, username, email, password, created_at FROM users WHERE email = $1", req.GetEmail()).Scan(&user.ID, &user.Username, &user.Email, &user.Password, &user.CreatedAt)
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil, err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.GetPassword()))
 
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil, err
 	}
 
@@ -61,6 +64,7 @@ func (a *authService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Auth
 	token, err := wrapper.GenerateToken(user.ID.String(), user.Email)
 
 	if err != nil {
+		fmt.Println(err.Error())
 		return nil, err
 	}
 
