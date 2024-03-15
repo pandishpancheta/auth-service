@@ -7,7 +7,6 @@ import (
 	"auth-service/pkg/pb"
 	"context"
 	"database/sql"
-	"github.com/gofrs/uuid/v5"
 	"log"
 )
 
@@ -23,7 +22,6 @@ type UserService interface {
 	GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error)
 	GetCurrentUser(ctx context.Context, req *pb.GetCurrentUserRequest) (*pb.GetUserResponse, error)
 	DeleteCurrentUser(ctx context.Context, req *pb.DeleteCurrentUserRequest) (*pb.EmptyResponse, error)
-	CreateContact(ctx context.Context, req *pb.CreateContactRequest) (*pb.Contact, error)
 	UpdateContact(ctx context.Context, req *pb.UpdateContactRequest) (*pb.Contact, error)
 }
 
@@ -134,45 +132,20 @@ func (u *userService) DeleteCurrentUser(ctx context.Context, req *pb.DeleteCurre
 	return &pb.EmptyResponse{}, nil
 }
 
-func (u *userService) CreateContact(ctx context.Context, req *pb.CreateContactRequest) (*pb.Contact, error) {
-	query := `
-		INSERT INTO contacts (id, user_id, email, phone, instagram, other)
-		VALUES ($1, $2, $3, $4, $5, $6)
-		RETURNING id
-	`
-
-	contactId, err := uuid.NewV4()
-	if err != nil {
-		return nil, err
-	}
-
-	err = u.db.QueryRowContext(ctx, query, contactId, req.GetUserId(), req.GetEmail(), req.GetPhone(), req.GetInstagram(), req.GetOther()).Scan(&contactId)
-	if err != nil {
-		return nil, err
-	}
-
-	return &pb.Contact{
-		Id:        contactId.String(),
-		Email:     req.GetEmail(),
-		Phone:     req.GetPhone(),
-		Instagram: req.GetInstagram(),
-		Other:     req.GetOther(),
-	}, nil
-}
-
 func (u *userService) UpdateContact(ctx context.Context, req *pb.UpdateContactRequest) (*pb.Contact, error) {
 	query := `
-		UPDATE contacts
-		SET email = '?',
-			phone = '?',
-			instagram = '?',
-			other = '?'
-		WHERE id = '?'
-		RETURNING id, email, phone, instagram, other;
-	`
+	UPDATE contacts
+	SET email = $1,
+		phone = $2,
+		instagram = $3,
+		other = $4
+	WHERE id = $5
+	RETURNING id, email, phone, instagram, other;
+`
+	log.Println(req.GetPhone())
 
 	var contact pb.Contact
-	err := u.db.QueryRowContext(ctx, query, req.GetEmail(), req.GetPhone(), req.GetInstagram(), req.GetOther(), req.GetId()).Scan(&contact.Id, &contact.Email, &req.Phone, &req.Instagram, &req.Other)
+	err := u.db.QueryRowContext(ctx, query, req.GetEmail(), req.GetPhone(), req.GetInstagram(), req.GetOther(), req.GetId()).Scan(&contact.Id, &contact.Email, &contact.Phone, &contact.Instagram, &contact.Other)
 
 	if err != nil {
 		return nil, err
