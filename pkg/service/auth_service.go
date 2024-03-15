@@ -95,6 +95,16 @@ func (a *authService) Register(ctx context.Context, req *pb.RegisterRequest) (*p
 		return nil, err
 	}
 
+	user.Contacts.ID, err = uuid.NewV4()
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = a.db.ExecContext(ctx, "INSERT INTO contacts (id, user_id) VALUES ($1, $2)", user.Contacts.ID, user.ID)
+	if err != nil {
+		return nil, err
+	}
+
 	wrapper := jwt.JwtWrapper{
 		a.cfg.JWT_SECRET_KEY,
 		a.cfg.JWT_EXPIRATION_HOURS,
