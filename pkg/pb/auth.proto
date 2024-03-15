@@ -37,11 +37,27 @@ service UserService {
   rpc GetUser(GetUserRequest) returns (GetUserResponse);
   rpc GetCurrentUser(GetCurrentUserRequest) returns (GetUserResponse);
   rpc DeleteCurrentUser(DeleteCurrentUserRequest) returns (EmptyResponse);
+  rpc CreateContact(CreateContactRequest) returns (Contact);
+}
+
+message Contact {
+  string id = 1;
+  string email = 2;
+  string phone = 3;
+  string instagram = 4;
+  string other = 5;
+}
+
+message CreateContactRequest {
+  string email = 1;
+  string phone = 2;
+  string instagram = 3;
+  string other = 4;
+  string user_id = 5;
 }
 
 message GetUserRequest {
   string id = 1;
-  string jwt = 2;
 }
 
 message GetUserByEmailRequest {
@@ -60,6 +76,7 @@ message GetUserResponse {
   string id = 1;
   string username = 2;
   string email = 3;
+  Contact contact = 4;
 }
 
 message EmptyResponse {}

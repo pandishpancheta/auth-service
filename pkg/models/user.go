@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"github.com/gofrs/uuid/v5"
 	"time"
 )
@@ -15,9 +16,9 @@ type User struct {
 }
 
 type Contacts struct {
-	ID        uuid.UUID `json:"id"`
-	Email     string    `json:"email"`
-	Phone     string    `json:"phone"`
-	Instagram string    `json:"instagram"`
-	Other     string    `json:"other"`
+	ID        uuid.UUID      `json:"id"`
+	Email     sql.NullString `json:"email"`
+	Phone     sql.NullString `json:"phone"`
+	Instagram sql.NullString `json:"instagram"`
+	Other     sql.NullString `json:"other"`
 }
