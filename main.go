@@ -5,10 +5,11 @@ import (
 	"auth-service/pkg/db"
 	"auth-service/pkg/pb"
 	"auth-service/pkg/service"
-	_ "github.com/joho/godotenv/autoload"
-	"google.golang.org/grpc"
 	"log"
 	"net"
+
+	_ "github.com/joho/godotenv/autoload"
+	"google.golang.org/grpc"
 )
 
 func main() {
@@ -20,15 +21,16 @@ func main() {
 	log.Println("DB_PASS: ", cfg.DB_PASS)
 	log.Println("DB_NAME: ", cfg.DB_NAME)
 
-	db := db.Init(cfg)
+	pgdb := db.Init(cfg)
+	db.InitTables(pgdb)
 
 	lis, err := net.Listen("tcp", "localhost:"+cfg.TCP_PORT)
 	if err != nil {
 		panic(err)
 	}
 
-	as := service.NewAuthService(db, cfg)
-	us := service.NewUserService(db, cfg)
+	as := service.NewAuthService(pgdb, cfg)
+	us := service.NewUserService(pgdb, cfg)
 
 	grpcServer := grpc.NewServer()
 
