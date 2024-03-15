@@ -131,11 +131,13 @@ func (a *authService) ValidateToken(ctx context.Context, req *pb.ValidateTokenRe
 }
 
 func UserExists(db *sql.DB, uuid uuid.UUID) bool {
-	var user models.User
-	err := db.QueryRowContext(context.Background(), "SELECT 1 FROM users WHERE id = $1", uuid.String()).Scan(&user.ID)
+	var id string
+	err := db.QueryRowContext(context.Background(), "SELECT id FROM users WHERE id = $1", uuid.String()).Scan(&id)
 	if errors.Is(err, sql.ErrNoRows) {
+		println(err.Error())
 		return false
 	} else if err != nil {
+		println(err.Error())
 		return false
 	}
 	return true
