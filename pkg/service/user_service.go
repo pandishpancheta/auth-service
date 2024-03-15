@@ -21,6 +21,8 @@ type userServices struct {
 type UserService interface {
 	GetUser(ctx context.Context, req *pb.GetUserRequest) (*pb.GetUserResponse, error)
 	GetCurrentUser(ctx context.Context, req *pb.GetCurrentUserRequest) (*pb.GetUserResponse, error)
+	GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*pb.GetUsersResponse, error)
+	GetUserByUsername(ctx context.Context, req *pb.GetUserByUsernameRequest) (*pb.GetUserResponse, error)
 	DeleteCurrentUser(ctx context.Context, req *pb.DeleteCurrentUserRequest) (*pb.EmptyResponse, error)
 	UpdateContact(ctx context.Context, req *pb.UpdateContactRequest) (*pb.Contact, error)
 }
@@ -152,4 +154,75 @@ func (u *userService) UpdateContact(ctx context.Context, req *pb.UpdateContactRe
 	}
 
 	return &contact, nil
+}
+
+func (u *userService) GetUsers(ctx context.Context, req *pb.GetUsersRequest) (*pb.GetUsersResponse, error) {
+	var users []*pb.GetUserResponse
+	query := `
+			SELECT u.id, u.username, u.email, u.password, u.created_at, c.id, c.email, c.phone, c.instagram, c.other
+			FROM users u
+			LEFT JOIN contacts c ON u.id = c.user_id
+		`
+	rows, err := u.db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var user models.User
+		err = rows.Scan(
+			&user.ID, &user.Username, &user.Email, &user.Password, &user.CreatedAt,
+			&user.Contacts.ID, &user.Contacts.Email, &user.Contacts.Phone, &user.Contacts.Instagram, &user.Contacts.Other,
+		)
+		if err != nil {
+			return nil, err
+		}
+		users = append(users, &pb.GetUserResponse{
+			Id:       user.ID.String(),
+			Username: user.Username,
+			Email:    user.Email,
+			Contact: &pb.Contact{
+				Id:        user.Contacts.ID.String(),
+				Email:     user.Contacts.Email.String,
+				Phone:     user.Contacts.Phone.String,
+				Instagram: user.Contacts.Instagram.String,
+				Other:     user.Contacts.Other.String,
+			},
+		})
+	}
+
+	return &pb.GetUsersResponse{
+		Users: users,
+	}, nil
+}
+
+func (u *userService) GetUserByUsername(ctx context.Context, req *pb.GetUserByUsernameRequest) (*pb.GetUserResponse, error) {
+	query := `
+		SELECT u.id, u.username, u.email, u.password, u.created_at, c.id, c.email, c.phone, c.instagram, c.other
+		FROM users u
+		LEFT JOIN contacts c ON u.id = c.user_id
+		WHERE u.username = $1
+	`
+
+	var user models.User
+	err := u.db.QueryRowContext(ctx, query, req.GetUsername()).Scan(
+		&user.ID, &user.Username, &user.Email, &user.Password, &user.CreatedAt,
+		&user.Contacts.ID, &user.Contacts.Email, &user.Contacts.Phone, &user.Contacts.Instagram, &user.Contacts.Other,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.GetUserResponse{
+		Id:       user.ID.String(),
+		Username: user.Username,
+		Email:    user.Email,
+		Contact: &pb.Contact{
+			Id:        user.Contacts.ID.String(),
+			Email:     user.Contacts.Email.String,
+			Phone:     user.Contacts.Phone.String,
+			Instagram: user.Contacts.Instagram.String,
+			Other:     user.Contacts.Other.String,
+		},
+	}, nil
 }
