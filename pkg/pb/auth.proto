@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package auth;
+
+option go_package = "./pkg/pb";
+
+service AuthService {
+  rpc Login(LoginRequest) returns (AuthResponse);
+  rpc Register(RegisterRequest) returns (AuthResponse);
+  rpc ValidateToken(ValidateTokenRequest) returns (ValidateTokenResponse);
+}
+
+message LoginRequest {
+  string email = 1;
+  string password = 2;
+}
+
+message RegisterRequest {
+  string username = 1;
+  string email = 2;
+  string password = 3;
+}
+
+message ValidateTokenRequest {
+  string jwt = 1;
+}
+
+message ValidateTokenResponse {
+  string user_id = 1;
+}
+
+message AuthResponse {
+  string jwt = 1;
+}
+
+service UserService {
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  rpc GetCurrentUser(GetCurrentUserRequest) returns (GetUserResponse);
+  rpc DeleteCurrentUser(DeleteCurrentUserRequest) returns (EmptyResponse);
+}
+
+message GetUserRequest {
+  string id = 1;
+  string jwt = 2;
+}
+
+message GetUserByEmailRequest {
+  string email = 1;
+}
+
+message GetCurrentUserRequest {
+  string jwt = 1;
+}
+
+message DeleteCurrentUserRequest {
+  string jwt = 1;
+}
+
+message GetUserResponse {
+  string id = 1;
+  string username = 2;
+  string email = 3;
+}
+
+message EmptyResponse {}
