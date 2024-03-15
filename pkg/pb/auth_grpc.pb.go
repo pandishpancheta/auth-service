@@ -185,6 +185,7 @@ const (
 	UserService_GetCurrentUser_FullMethodName    = "/auth.UserService/GetCurrentUser"
 	UserService_DeleteCurrentUser_FullMethodName = "/auth.UserService/DeleteCurrentUser"
 	UserService_CreateContact_FullMethodName     = "/auth.UserService/CreateContact"
+	UserService_UpdateContact_FullMethodName     = "/auth.UserService/UpdateContact"
 )
 
 // UserServiceClient is the client API for UserService service.
@@ -195,6 +196,7 @@ type UserServiceClient interface {
 	GetCurrentUser(ctx context.Context, in *GetCurrentUserRequest, opts ...grpc.CallOption) (*GetUserResponse, error)
 	DeleteCurrentUser(ctx context.Context, in *DeleteCurrentUserRequest, opts ...grpc.CallOption) (*EmptyResponse, error)
 	CreateContact(ctx context.Context, in *CreateContactRequest, opts ...grpc.CallOption) (*Contact, error)
+	UpdateContact(ctx context.Context, in *UpdateContactRequest, opts ...grpc.CallOption) (*Contact, error)
 }
 
 type userServiceClient struct {
@@ -241,6 +243,15 @@ func (c *userServiceClient) CreateContact(ctx context.Context, in *CreateContact
 	return out, nil
 }
 
+func (c *userServiceClient) UpdateContact(ctx context.Context, in *UpdateContactRequest, opts ...grpc.CallOption) (*Contact, error) {
+	out := new(Contact)
+	err := c.cc.Invoke(ctx, UserService_UpdateContact_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // UserServiceServer is the server API for UserService service.
 // All implementations should embed UnimplementedUserServiceServer
 // for forward compatibility
@@ -249,6 +260,7 @@ type UserServiceServer interface {
 	GetCurrentUser(context.Context, *GetCurrentUserRequest) (*GetUserResponse, error)
 	DeleteCurrentUser(context.Context, *DeleteCurrentUserRequest) (*EmptyResponse, error)
 	CreateContact(context.Context, *CreateContactRequest) (*Contact, error)
+	UpdateContact(context.Context, *UpdateContactRequest) (*Contact, error)
 }
 
 // UnimplementedUserServiceServer should be embedded to have forward compatible implementations.
@@ -266,6 +278,9 @@ func (UnimplementedUserServiceServer) DeleteCurrentUser(context.Context, *Delete
 }
 func (UnimplementedUserServiceServer) CreateContact(context.Context, *CreateContactRequest) (*Contact, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CreateContact not implemented")
+}
+func (UnimplementedUserServiceServer) UpdateContact(context.Context, *UpdateContactRequest) (*Contact, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateContact not implemented")
 }
 
 // UnsafeUserServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -351,6 +366,24 @@ func _UserService_CreateContact_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _UserService_UpdateContact_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateContactRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserServiceServer).UpdateContact(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: UserService_UpdateContact_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserServiceServer).UpdateContact(ctx, req.(*UpdateContactRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // UserService_ServiceDesc is the grpc.ServiceDesc for UserService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -373,6 +406,10 @@ var UserService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CreateContact",
 			Handler:    _UserService_CreateContact_Handler,
+		},
+		{
+			MethodName: "UpdateContact",
+			Handler:    _UserService_UpdateContact_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

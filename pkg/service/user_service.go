@@ -24,6 +24,7 @@ type UserService interface {
 	GetCurrentUser(ctx context.Context, req *pb.GetCurrentUserRequest) (*pb.GetUserResponse, error)
 	DeleteCurrentUser(ctx context.Context, req *pb.DeleteCurrentUserRequest) (*pb.EmptyResponse, error)
 	CreateContact(ctx context.Context, req *pb.CreateContactRequest) (*pb.Contact, error)
+	UpdateContact(ctx context.Context, req *pb.UpdateContactRequest) (*pb.Contact, error)
 }
 
 type userService struct {
@@ -157,4 +158,25 @@ func (u *userService) CreateContact(ctx context.Context, req *pb.CreateContactRe
 		Instagram: req.GetInstagram(),
 		Other:     req.GetOther(),
 	}, nil
+}
+
+func (u *userService) UpdateContact(ctx context.Context, req *pb.UpdateContactRequest) (*pb.Contact, error) {
+	query := `
+		UPDATE contacts
+		SET email = '?',
+			phone = '?',
+			instagram = '?',
+			other = '?'
+		WHERE id = '?'
+		RETURNING id, email, phone, instagram, other;
+	`
+
+	var contact pb.Contact
+	err := u.db.QueryRowContext(ctx, query, req.GetEmail(), req.GetPhone(), req.GetInstagram(), req.GetOther(), req.GetId()).Scan(&contact.Id, &contact.Email, &req.Phone, &req.Instagram, &req.Other)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &contact, nil
 }

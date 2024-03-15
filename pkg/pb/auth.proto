@@ -38,6 +38,7 @@ service UserService {
   rpc GetCurrentUser(GetCurrentUserRequest) returns (GetUserResponse);
   rpc DeleteCurrentUser(DeleteCurrentUserRequest) returns (EmptyResponse);
   rpc CreateContact(CreateContactRequest) returns (Contact);
+  rpc UpdateContact(UpdateContactRequest) returns (Contact);
 }
 
 message Contact {
@@ -54,6 +55,14 @@ message CreateContactRequest {
   string instagram = 3;
   string other = 4;
   string user_id = 5;
+}
+
+message UpdateContactRequest {
+  string id = 1;
+  string email = 2;
+  string phone = 3;
+  string instagram = 4;
+  string other = 5;
 }
 
 message GetUserRequest {
