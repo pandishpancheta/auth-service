@@ -36,9 +36,9 @@ func Init(cfg *config.Config) *sql.DB {
 func InitTables(db *sql.DB) {
 	_, err := db.Exec(`CREATE TABLE IF NOT EXISTS users (
 		id UUID PRIMARY KEY,
-		username TEXT,
-		password TEXT,
-		email TEXT,
+		username TEXT UNIQUE NOT NULL,
+		password TEXT NOT NULL,
+		email TEXT UNIQUE NOT NULL,
 		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 	)`)
 	if err != nil {
